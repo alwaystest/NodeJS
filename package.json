@@ -1,0 +1,25 @@
+{
+  "name": "spy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alwaystest/NodeJS.git"
+  },
+  "author": "eric",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alwaystest/NodeJS/issues"
+  },
+  "homepage": "https://github.com/alwaystest/NodeJS#readme",
+  "dependencies": {
+    "cheerio": "^0.20.0",
+    "eventproxy": "^0.3.4",
+    "express": "^4.13.4",
+    "superagent": "^1.8.3"
+  }
+}
