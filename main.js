@@ -1,6 +1,7 @@
 var config = require('./config.js');
 var grabTrainNo = require('./grabTrainNo.js');
 var grabStation = require('./grabStation.js');
+var query = require('./query.js');
 
 if(config.grabTrainNo){
     console.log('Grabing train No');
@@ -14,3 +15,4 @@ if(config.grabStation){
 }else{
     console.log('skip grabStation');
 }
+query("重庆");
