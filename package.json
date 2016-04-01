@@ -17,9 +17,11 @@
   },
   "homepage": "https://github.com/alwaystest/NodeJS#readme",
   "dependencies": {
+    "async": "^2.0.0-rc.2",
     "cheerio": "^0.20.0",
     "eventproxy": "^0.3.4",
     "express": "^4.13.4",
+    "mysql": "github:felixge/node-mysql",
     "superagent": "^1.8.3"
   }
 }
