@@ -1,13 +1,13 @@
 var cheerio = require('cheerio');
 var superagent = require('superagent');
-var url = require('url');
+// var url = require('url');
 var async = require('async');
 var mysql = require('mysql');
 var config = require('./config.js');
 
 var conn = mysql.createConnection(config.mysql);
 
-var divider = '----------------------------------------------------------------'
+var divider = '----------------------------------------------------------------';
 var baseUrl = 'http://www.tielu.org/TrainList/TrainList-';
 var pages = 38;
 var sleep = 1000;

@@ -22,9 +22,11 @@
     "cheerio": "^0.20.0",
     "eventproxy": "^0.3.4",
     "express": "^4.13.4",
+    "iconv-lite": "^0.4.13",
     "mysql": "github:felixge/node-mysql",
     "progress-request": "0.0.1",
     "superagent": "^1.8.3",
+    "superagent-charset": "^1.0.0",
     "winston": "^2.2.0"
   }
 }
