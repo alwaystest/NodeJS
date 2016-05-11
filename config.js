@@ -1,11 +1,11 @@
 module.exports={
-    grabTrainNo : false,
-    grabStation : false,
+    grabTrainNo : true,
+    grabStation : true,
     mysql : {
-        host: '192.168.99.100',
+        host: '159.203.229.181',
         user: 'root',
-        password: 'tyuteric',
+        password: 'mmmsql',
         database: 'TYUT',
-        port: 3306
+        port: 32772
     }
 };
