@@ -42,7 +42,8 @@ grab().then(function(){
             }
             // var items = [];
             var $ = cheerio.load(sres.text);
-            $('#timetable2 tbody tr td:nth-child(2)').each(function(idx, element){
+            // $('#timetable2 tbody tr td:nth-child(2)').each(function(idx, element){
+            $('#timetable2 tbody').each(function(idx, element){
                 var $element = $(element);
                 console.log($element.text().trim());
                 // console.log($element.attr('href'));
