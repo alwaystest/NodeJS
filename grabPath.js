@@ -23,7 +23,7 @@ var readList = function (callback) {
             if(index > 2) return;
             list.push(item.train);
         });
-        console.log(list);
+        console.log('Load '+list.length+' Train');
         callback();
     });
     conn.end();
@@ -42,12 +42,19 @@ grab().then(function(){
             }
             // var items = [];
             var $ = cheerio.load(sres.text);
+            var stations = [];
             $('#timetable2>tr td:nth-child(2)').each(function(idx, element){
                 var $element = $(element);
-		//console.log($element.html());
-                console.log($element.text().trim());
-                //console.log($element.attr('href'));
+                //console.log($element.html());
+                var station = $element.text().trim();
+                stations.push(station);
             });
+            console.log(stations);
+            for(i=0; i < stations.length - 1; i++){
+                for(j = i + 1; j < stations.length; j++){
+                    console.log(stations[i] + ' to ' + stations[j]);
+                }
+            }
         });
     });
 });
