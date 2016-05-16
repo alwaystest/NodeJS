@@ -7,6 +7,7 @@ var Promise = require("bluebird");
 var iconv = require("iconv-lite");
 var charset = require("superagent-charset")
 var config = require('./config.js');
+var query = require('./query.js');
 
 var conn = mysql.createConnection(config.mysql);
 
@@ -19,6 +20,10 @@ charset(superagent);
 var readList = function (callback) {
     conn.connect();
     conn.query("select * from TrainNo",function(error,result){
+        if(error) {
+            console.log(error);
+            return;
+        }
         result.forEach(function(item, index){
             if(index > 2) return;
             list.push(item.train);
@@ -28,6 +33,53 @@ var readList = function (callback) {
     });
     conn.end();
     // return callback();
+}
+
+function saveToDB(from, to, lineNo){
+    var connTmp = mysql.createConnection(config.mysql);
+    connTmp.connect();
+    var relation = {fromStation:from, toStation:to,TrainNo:lineNo};
+    connTmp.query('insert into TrainRelation set ?', relation,function(err,result){
+        if(err){
+            console.log(err);
+        }
+        if(result.affectedRows>0){
+            console.log(from+'\t'+to+'\t'+'at line\t'+lineNo+"Success");
+        }
+    });
+}
+
+function checkExsist(from, to, lineNo){
+    console.log(from+'\t'+to+'\t'+lineNo);
+    var connTmp = mysql.createConnection(config.mysql);
+    connTmp.connect();
+    var query = connTmp.query('select * from TrainRelation where fromStation = ? and toStation = ?',[from,to],function(error,result){
+        //connTmp.query("select * from TrainNo",function(error,result){
+        if(error) {
+            console.log(from+'\t'+to+'\t'+'at line\t'+lineNo+"Failed");
+        }
+        //console.log(result.length);
+        if(result.length==0){
+          var queryFromId = query(from);
+          var queryToId = query(to);
+          Promise.all(queryFromId,queryToId)
+            .then(function(ids){
+              console.log(ids);
+              //saveToDB(from,to,lineNo);
+            });
+        }
+        connTmp.end();
+    });
+}
+
+function saveRelations(stations,lineNo){
+    console.log(stations);
+    for(i=0; i < stations.length - 1; i++){
+        for(j = i + 1; j < stations.length; j++){
+            console.log(stations[i] + ' to ' + stations[j]);
+            checkExsist(stations[i],stations[j],lineNo);
+        }
+    }
 }
 
 var grab = Promise.promisify(readList);
@@ -49,12 +101,7 @@ grab().then(function(){
                 var station = $element.text().trim();
                 stations.push(station);
             });
-            console.log(stations);
-            for(i=0; i < stations.length - 1; i++){
-                for(j = i + 1; j < stations.length; j++){
-                    console.log(stations[i] + ' to ' + stations[j]);
-                }
-            }
+            saveRelations(stations,item);
         });
     });
 });
