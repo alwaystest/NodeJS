@@ -17,9 +17,12 @@ var baseUrl = 'http://www.tielu.org/Search/';
 var list = [];
 charset(superagent);
 var q = async.queue(function (task,callback){
-     checkExsist(task.from,task.to,task.lineNo);
-     callback();
+    checkExsist(task.from,task.to,task.lineNo,callback);
 },2);
+
+q.drain = function(){
+    console.log("All Complete");
+};
 
 var readList = function (callback) {
     conn.connect();
@@ -53,7 +56,7 @@ function saveToDB(from, to, lineNo){
     });
 }
 
-function checkExsist(from, to, lineNo){
+function checkExsist(from, to, lineNo, AsyncCallback){
     //console.log(from+'\t'+to+'\t'+lineNo);
     var connTmp = mysql.createConnection(config.mysql);
     connTmp.connect();
@@ -65,20 +68,23 @@ function checkExsist(from, to, lineNo){
         }
         //console.log(result.length);
         if(result.length==0){
-          var queryFromId = query(from);
-          var queryToId = query(to);
-          Promise.all([queryFromId,queryToId])
+            var queryFromId = query(from);
+            var queryToId = query(to);
+            console.log(from+'\t'+to+'\t'+'at line\t'+lineNo+"\tDoing");
+            Promise.all([queryFromId,queryToId])
             .then(function(ids){
-                console.log(from+'\t'+to+'\t'+'at line\t'+lineNo+"\tSuccess");
-              //saveToDB(from,to,lineNo);
+                console.log(from+'\t'+ids[0]+'\t'+to+'\t'+ids[1]+'\t'+'at line\t'+lineNo+"\tSuccess");
+                //saveToDB(from,to,lineNo);
             })
             .catch(function(err){
-                 console.error(err.message);
-            });
+                console.error(err.message);
+            })
+            .done();
         }else{
             console.log(from+'\t'+to+'\t'+'at line\t'+lineNo+"\tExists");
         }
         connTmp.end();
+        AsyncCallback();
     });
 }
 
