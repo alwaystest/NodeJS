@@ -16,6 +16,10 @@ var baseUrl = 'http://www.tielu.org/Search/';
 
 var list = [];
 charset(superagent);
+var q = async.queue(function (task,callback){
+     checkExsist(task.from,task.to,task.lineNo);
+     callback();
+},2);
 
 var readList = function (callback) {
     conn.connect();
@@ -57,6 +61,7 @@ function checkExsist(from, to, lineNo){
         //connTmp.query("select * from TrainNo",function(error,result){
         if(error) {
             console.log(from+'\t'+to+'\t'+'at line\t'+lineNo+"\tFailed");
+            return;
         }
         //console.log(result.length);
         if(result.length==0){
@@ -82,7 +87,7 @@ function saveRelations(stations,lineNo){
     for(i=0; i < stations.length - 1; i++){
         for(j = i + 1; j < stations.length; j++){
             //console.log(stations[i] + ' to ' + stations[j]);
-            checkExsist(stations[i],stations[j],lineNo);
+            q.push({from:stations[i],to:stations[j],lineNo:lineNo});
         }
     }
 }
