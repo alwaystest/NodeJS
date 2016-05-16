@@ -4,7 +4,7 @@ var Promise = require("bluebird");
 
 
 var query = function(name){
-  return new Promise(function(resolve, reject)){
+  return new Promise(function(resolve, reject){
     var conn = mysql.createConnection(config.mysql);
     conn.connect();
     var query = conn.query('select id from Station where name=?',[name], function(err, results){
@@ -13,7 +13,7 @@ var query = function(name){
       conn.end();
     });
     // console.log(query.sql);
-  }
+  });
 }
 
 module.exports = query;
