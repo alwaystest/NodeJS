@@ -24,6 +24,14 @@ q.drain = function(){
     console.log("All Complete");
 };
 
+var insertQueue = async.queue(function(task,callback){
+  saveToDB(task.from,task.to,task.lineNo,callback);
+},2);
+
+insertQueue.drain = function(){
+    console.log("Insert Complete");
+};
+
 var readList = function (callback) {
     conn.connect();
     conn.query("select * from TrainNo",function(error,result){
@@ -39,20 +47,22 @@ var readList = function (callback) {
         callback();
     });
     conn.end();
-    // return callback();
 }
 
-function saveToDB(from, to, lineNo){
+function saveToDB(from, to, lineNo, AsyncCallback){
     var connTmp = mysql.createConnection(config.mysql);
     connTmp.connect();
     var relation = {fromStation:from, toStation:to,TrainNo:lineNo};
     connTmp.query('insert into TrainRelation set ?', relation,function(err,result){
         if(err){
             console.log(err);
+            return;
         }
         if(result.affectedRows>0){
             console.log(from+'\t'+to+'\t'+'at line\t'+lineNo+"\tSuccess");
         }
+        connTmp.end();
+        AsyncCallback();
     });
 }
 
@@ -73,7 +83,8 @@ function checkExsist(from, to, lineNo, AsyncCallback){
             console.log(from+'\t'+to+'\t'+'at line\t'+lineNo+"\tDoing");
             Promise.all([queryFromId,queryToId])
             .then(function(ids){
-                console.log(from+'\t'+ids[0]+'\t'+to+'\t'+ids[1]+'\t'+'at line\t'+lineNo+"\tSuccess");
+                //console.log(from+'\t'+ids[0]+'\t'+to+'\t'+ids[1]+'\t'+'at line\t'+lineNo+"\tSuccess");
+                insertQueue.push({from:from,to:to,lineNo:lineNo});
                 //saveToDB(from,to,lineNo);
             })
             .catch(function(err){
