@@ -6,6 +6,7 @@ var mysql = require('mysql');
 var Promise = require("bluebird");
 var iconv = require("iconv-lite");
 var charset = require("superagent-charset")
+var cache = require("memory-cache");
 var config = require('./config.js');
 var query = require('./query.js');
 
@@ -17,8 +18,8 @@ var baseUrl = 'http://www.tielu.org/Search/';
 var list = [];
 charset(superagent);
 var q = async.queue(function (task,callback){
-    var queryFromId = query(task.from);
-    var queryToId = query(task.to);
+    var queryFromId = query(task.from,cache);
+    var queryToId = query(task.to,cache);
     Promise.all([queryFromId,queryToId])
     .then(function(ids){
         checkExsist(ids[0],ids[1],task.lineNo,callback);
