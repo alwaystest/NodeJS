@@ -32,7 +32,13 @@ var query = function(name, cache){
             resolve(results[0].id);
         });
         // console.log(query.sql);
-    }).finally(function(){conn.end();});
+    }).finally(function(){
+        conn.end(function(err){
+            if(err){
+                console.log(err.message);
+            }
+        });
+    });
 };
 
 module.exports = query;

@@ -29,7 +29,7 @@ var q = async.queue(function (task,callback){
         callback();//出现Error，导致callback无法被调用，这里调用callback，使得q能继续执行。
     })
     .done();
-},2);
+},8);
 
 q.drain = function(){
     console.log("All Complete");
@@ -37,11 +37,35 @@ q.drain = function(){
 
 var insertQueue = async.queue(function(task,callback){
     saveToDB(task.from,task.to,task.lineNo,callback);
-},2);
+},8);
 
 insertQueue.drain = function(){
     console.log("Insert Complete");
 };
+
+var StationsWebQueue = async.queue(function(task,callback){
+    superagent.get(task.url).charset('gbk')
+    .end(function(err, sres) {
+        if (err) {
+            console.error("err@\t"+task.url);
+            return;
+        }
+        // var items = [];
+        var $ = cheerio.load(sres.text);
+        var stations = [];
+        $('#timetable2>tr td:nth-child(2)').each(function(idx, element){
+            var $element = $(element);
+            //console.log($element.html());
+            var station = $element.text().trim();
+            stations.push(station);
+        });
+        saveRelations(stations,task.item);
+        setTimeout(function(){
+            console.log('StationWebQ---'+StationsWebQueue.length());
+             callback();
+        },1000);
+    });
+},1);
 
 var readList = function (callback) {
     conn.connect();
@@ -55,9 +79,9 @@ var readList = function (callback) {
             list.push(item.train);
         });
         console.log('Load '+list.length+' Train');
+        conn.end();
         callback();
     });
-    conn.end();
 }
 
 function saveToDB(from, to, lineNo, AsyncCallback){
@@ -65,6 +89,7 @@ function saveToDB(from, to, lineNo, AsyncCallback){
     connTmp.connect();
     var relation = {fromStation:from, toStation:to,TrainNo:lineNo};
     connTmp.query('insert into TrainRelation set ?', relation,function(err,result){
+        console.log('InsertDB_Q---'+insertQueue.length());
         if(err){
             console.log(err);
             AsyncCallback();
@@ -84,6 +109,7 @@ function checkExsist(from, to, lineNo, AsyncCallback){
     connTmp.connect();
     connTmp.query('select * from TrainRelation where fromStation = ? and toStation = ?',[from,to],function(error,result){
         //connTmp.query("select * from TrainNo",function(error,result){
+        console.log('CheckQueue---'+q.length());
         if(error) {
             console.log(from+'\t'+to+'\t'+'at line\t'+lineNo+"\tFailed");
             AsyncCallback();
@@ -117,22 +143,6 @@ var grab = Promise.promisify(readList);
 grab().then(function(){
     list.forEach(function (item, index) {
         var url = baseUrl + item + '.html';
-        superagent.get(url).charset('gbk')
-        .end(function(err, sres) {
-            if (err) {
-                console.error("err@\t"+url);
-                return;
-            }
-            // var items = [];
-            var $ = cheerio.load(sres.text);
-            var stations = [];
-            $('#timetable2>tr td:nth-child(2)').each(function(idx, element){
-                var $element = $(element);
-                //console.log($element.html());
-                var station = $element.text().trim();
-                stations.push(station);
-            });
-            saveRelations(stations,item);
-        });
+        StationsWebQueue.push({url:url,item:item});
     });
 });
