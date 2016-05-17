@@ -84,7 +84,7 @@ function checkExsist(from, to, lineNo, AsyncCallback){
             Promise.all([queryFromId,queryToId])
             .then(function(ids){
                 //console.log(from+'\t'+ids[0]+'\t'+to+'\t'+ids[1]+'\t'+'at line\t'+lineNo+"\tSuccess");
-                insertQueue.push({from:from,to:to,lineNo:lineNo});
+                insertQueue.push({from:ids[0],to:ids[1],lineNo:lineNo});
                 //saveToDB(from,to,lineNo);
             })
             .catch(function(err){
