@@ -3,7 +3,7 @@ var mysql = require('mysql');
 var Promise = require("bluebird");
 
 
-var query = function(name, cache){
+var query = function(name, cache, pool){
     var conn = mysql.createConnection(config.mysql);
     return new Promise(function(resolve, reject){
         var id = cache.get(name);
@@ -16,27 +16,29 @@ var query = function(name, cache){
             }
             return;
         }
-        conn.connect();
-        var query = conn.query('select id from Station where name=?',[name], function(err, results){
+        pool.getConnection(function(err, conn){
             if(err){
-                reject(err);
+                console.log(err);
                 return;
             }
-            if(results.length==0){
-                cache.put(name,-1);
-                reject(new Error(name+'车站不存在'));
-                return;
-            }
-            //console.log(results[0].id);
-            cache.put(name,results[0].id);
-            resolve(results[0].id);
-        });
-        // console.log(query.sql);
-    }).finally(function(){
-        conn.end(function(err){
-            if(err){
-                console.log(err.message);
-            }
+            var query = conn.query('select id from Station where name=?',[name], function(err, results){
+                if(err){
+                    conn.release();
+                    reject(err);
+                    return;
+                }
+                if(results.length==0){
+                    cache.put(name,-1);
+                    conn.release();
+                    reject(new Error(name+'车站不存在'));
+                    return;
+                }
+                //console.log(results[0].id);
+                cache.put(name,results[0].id);
+                conn.release();
+                resolve(results[0].id);
+            });
+            // console.log(query.sql);
         });
     });
 };
